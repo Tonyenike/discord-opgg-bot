@@ -8,3 +8,6 @@ Install dependencies:
 Run the bot:
 
 `python3 bot.py`
+
+
+This bot is hosted on [Heroku](www.heroku.com)
