@@ -39,7 +39,7 @@ class MyClient(discord.Client):
                         await self.close()
                         return
                     elif text_words[i] == '!version':
-                        await message.channel.send(version)
+                        await message.channel.send("`Version: " + version + "`")
                         return
                     else:
                         await message.channel.send(messages.command_not_recognized(text_words[i]))
@@ -52,12 +52,14 @@ class MyClient(discord.Client):
                     return
                 user_name_on_opgg = soup.find(class_="Name").string
                 game_history = soup.find_all(class_="GameItemWrap", limit=10)
-                gameModes = [el.find(class_="GameType").string.split()[0] for el in game_history]
-                victory_or_defeat = ["  Defeat " if (el.find(class_="Win") is None) else "  Victory" for el in game_history]
-                kdas = ["\tKDA: " + el.find("span", class_="KDARatio").string.split()[0] for el in game_history]
-                res = [i + j + k for i, j, k in zip(gameModes, victory_or_defeat, kdas)] 
+                gameModes         = [el.find(class_="GameType").string.split()[0] + " "*(9 - len(el.find(class_="GameType").string.split()[0])) for el in game_history]
+                victory_or_defeat = ["|Defeat " if (el.find(class_="Win") is None) else "|Victory" for el in game_history]
+                kdas =              ["|" + el.find("span", class_="KDARatio").string.split()[0][0:4] for el in game_history]
+                kp   =              ["|" + el.find("div", class_="CKRate").string.split()[1] for el in game_history]
+                res = [i + j + k + l for i, j, k, l in zip(gameModes, victory_or_defeat, kdas, kp)] 
                 myString = '\n'.join(res)
-                await message.channel.send('```\nSTATS FOR ' + user_name_on_opgg + ": \n----------------------\n" + myString + "```")
+                myDivider="\n" + "-" * 26 + "\n"
+                await message.channel.send('```\nSTATS FOR ' + user_name_on_opgg + ": " + myDivider + "Game type|Outcome|KDA |KP" + myDivider +  myString + "```")
                 return
 
 client = MyClient()
