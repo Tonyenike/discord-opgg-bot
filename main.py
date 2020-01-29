@@ -61,4 +61,4 @@ class MyClient(discord.Client):
                 return
 
 client = MyClient()
-client.run(os.environ["token"])
+client.run("NjcwNDY1NDA4MzQ3Nzk5NTgy.XjH-4A.5ihcbTXn4-KBzZjBUMuhGAGc6No")
