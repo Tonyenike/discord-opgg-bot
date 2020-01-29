@@ -1,0 +1,12 @@
+# [START runtime]
+runtime: python37
+# [END runtime]
+default_expiration: 1s
+
+# [START handlers]
+handlers:
+ - url: /.*
+   script: auto
+   secure: always
+
+# [END handlers]
