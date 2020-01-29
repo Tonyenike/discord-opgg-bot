@@ -1,5 +1,4 @@
 import discord
-import secret
 import messages
 import requests
 import os
