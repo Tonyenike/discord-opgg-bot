@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 server_list = ["na", "euw", "eune", "ru", "kr", "lan", "oce", "br", "las", "tr", "cn", "jp"]
 
 
-version = "1.0.0"
+version = "1.1.0"
 
 class MyClient(discord.Client):
     async def on_ready(self):
