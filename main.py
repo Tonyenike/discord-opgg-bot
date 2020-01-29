@@ -2,6 +2,7 @@ import discord
 import secret
 import messages
 import requests
+import os
 from bs4 import BeautifulSoup
 
 server_list = ["na", "euw", "eune", "ru", "kr", "lan", "oce", "br", "las", "tr", "cn", "jp"]
@@ -61,4 +62,4 @@ class MyClient(discord.Client):
                 return
 
 client = MyClient()
-client.run("NjcxOTQzMDEzNjY0MjkyOTA0.XjEZKw.HbGi5CbJxKu3sLdy9dqgOPsg6ww")
+client.run(os.environ["token"])
