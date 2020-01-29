@@ -61,5 +61,4 @@ class MyClient(discord.Client):
                 return
 
 client = MyClient()
-print(secret.token)
-client.run("NjcwNDY1NDA4MzQ3Nzk5NTgy.XjEWDA.66_Bvfnm2kJfkoJ-5zvzSJjjLOc")
+client.run("NjcwNDY1NDA4MzQ3Nzk5NTgy.XjEWgg.0d7Yx491IiZKnFiuXeCpskFjArs")
