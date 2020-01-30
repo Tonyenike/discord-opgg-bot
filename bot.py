@@ -9,7 +9,7 @@ server_list = ["na", "euw", "eune", "ru", "kr", "lan", "oce", "br", "las", "tr",
 DEVELOPMENT_MODE = False
 discord_api_key="NjcwNDY1NDA4MzQ3Nzk5NTgy.XjH-4A.5ihcbTXn4-KBzZjBUMuhGAGc6No"
 
-version = "1.1.0"
+version = "1.2.0"
 
 class MyClient(discord.Client):
     async def on_ready(self):
