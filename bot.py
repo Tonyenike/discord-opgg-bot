@@ -2,10 +2,12 @@ import discord
 import messages
 import requests
 import os
+import time
 from bs4 import BeautifulSoup
 
 server_list = ["na", "euw", "eune", "ru", "kr", "lan", "oce", "br", "las", "tr", "cn", "jp"]
-
+DEVELOPMENT_MODE = False
+discord_api_key="NjcwNDY1NDA4MzQ3Nzk5NTgy.XjH-4A.5ihcbTXn4-KBzZjBUMuhGAGc6No"
 
 version = "1.1.0"
 
@@ -14,6 +16,8 @@ class MyClient(discord.Client):
         print('Logged on as {0}!'.format(self.user))
 
     async def on_message(self, message):
+        if DEVELOPMENT_MODE and not(message.channel.guild.id == 670463741082730498):
+            return
         text_words = message.content.split()
         num_words = len(text_words)
         if '!opgg' ==  text_words[0]:
@@ -35,9 +39,13 @@ class MyClient(discord.Client):
                         text_words.pop(i + 1)
                         text_words.pop(i)
                     elif text_words[i] == '!shutdown':
-                        await message.channel.send(messages.goodbye)
-                        await self.close()
-                        return
+                        if(str(message.author) == "Me Too Thanks#7924"):
+                            await message.channel.send(messages.goodbye)
+                            await self.close()
+                            return
+                        else:
+                            await message.channel.send(messages.no)
+                            return
                     elif text_words[i] == '!version':
                         await message.channel.send("`Version: " + version + "`")
                         return
@@ -50,17 +58,31 @@ class MyClient(discord.Client):
                 if soup.find(class_="Name") is None:
                     await message.channel.send(messages.user_not_found(' '.join(text_words), server_name))
                     return
+                refresh_button = soup.find(id="SummonerRefreshButton")
+                summoner_id = int(refresh_button['onclick'][39:47])
+                refresh_url = "https://" + server_name + ".op.gg/summoner/ajax/renew.json/"
+                form_data = {"summonerId": summoner_id}
+                requests.post(refresh_url, form_data)
+                refresh_url2 = "https://" + server_name + ".op.gg/summoner/ajax/renewStatus.json/"
+                while(True):
+                    time.sleep(.1)
+                    resp = requests.post(refresh_url2, form_data)
+                    if resp.json()['finish'] == True:
+                        break
+                r = requests.get(url)
+                soup = BeautifulSoup(r.text, 'html.parser')
                 user_name_on_opgg = soup.find(class_="Name").string
                 game_history = soup.find_all(class_="GameItemWrap", limit=10)
-                gameModes         = [el.find(class_="GameType").string.split()[0] + " "*(9 - len(el.find(class_="GameType").string.split()[0])) for el in game_history]
+                gameModes         = [el.find(class_="GameType").string.split()[0] + " "*(6 - len(el.find(class_="GameType").string.split()[0])) for el in game_history]
                 victory_or_defeat = ["|Defeat " if (el.find(class_="Win") is None) else "|Victory" for el in game_history]
                 kdas =              ["|" + el.find("span", class_="KDARatio").string.split()[0][0:4] for el in game_history]
                 kp   =              ["|" + el.find("div", class_="CKRate").string.split()[1] for el in game_history]
                 res = [i + j + k + l for i, j, k, l in zip(gameModes, victory_or_defeat, kdas, kp)] 
                 myString = '\n'.join(res)
                 myDivider="\n" + "-" * 26 + "\n"
-                await message.channel.send('```\nSTATS FOR ' + user_name_on_opgg + ": " + myDivider + "Game type|Outcome|KDA |KP" + myDivider +  myString + "```")
+                DEV_STR = "DEVELOPMENT MODE:\n" if DEVELOPMENT_MODE else ""
+                await message.channel.send('```\n' + DEV_STR + 'STATS FOR ' + user_name_on_opgg + ": " + myDivider + "Game  |Outcome|KDA |KP" + myDivider +  myString + "```")
                 return
 
 client = MyClient()
-client.run("NjcwNDY1NDA4MzQ3Nzk5NTgy.XjH-4A.5ihcbTXn4-KBzZjBUMuhGAGc6No")
+client.run(discord_api_key)

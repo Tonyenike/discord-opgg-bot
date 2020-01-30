@@ -6,6 +6,10 @@ server_arg_missing="Usage: `!server <server>`"
 
 goodbye="Goodbye!"
 
+development="DEVELOPMENT MODE BOT SAYS:\n"
+
+no="You aren't the boss of me!"
+
 def command_not_recognized(command):
     return "Command not recognized: `" + command + "`"
 
