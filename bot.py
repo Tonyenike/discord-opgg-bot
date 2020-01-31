@@ -7,14 +7,14 @@ from bs4 import BeautifulSoup
 discord_api_key="NjcwNDY1NDA4MzQ3Nzk5NTgy.XjH-4A.5ihcbTXn4-KBzZjBUMuhGAGc6No"
 DEVELOPMENT_MODE = True
 server_list = ["na", "euw", "eune", "ru", "kr", "lan", "oce", "br", "las", "tr", "cn", "jp"]
-version = "1.2.3"
+version = "1.2.5"
 
 async def process_commands(text_words, message):
     resp = {}
     resp['server_name'] = "na"
     for i in range(len(text_words)):
         if text_words[i] == '!server':
-            if i + 1 == num_words:
+            if i + 1 == len(text_words):
                 await message.channel.send(messages.server_arg_missing)
                 return None
             resp.server_name = text_words[i + 1]
@@ -44,6 +44,7 @@ async def process_commands(text_words, message):
 class MyClient(discord.Client):
     
     def __init__(self):
+        global DEVELOPMENT_MODE
         if len(sys.argv) == 1:
             DEVELOPMENT_MODE = True
         elif sys.argv[1] == "prod":
@@ -94,7 +95,7 @@ class MyClient(discord.Client):
             if len(game_history) == 0:
                 await message.channel.send("`" + user_name_on_opgg + "` has not played any games recently")
                 return
-            gameModes, victory_or_defeat, kdas, kp = [], [], [], [], []
+            gameModes, victory_or_defeat, kdas, kp = [], [], [], []
             for el in game_history:
                 gameModes.append        (el.find(class_="GameType").string.split()[0] + " "*(6 - len(el.find(class_="GameType").string.split()[0])))
                 victory_or_defeat.append("|Defeat " if (el.find(class_="Win") is None) else "|Victory")
