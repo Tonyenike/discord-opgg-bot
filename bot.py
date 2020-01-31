@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 discord_api_key="NjcwNDY1NDA4MzQ3Nzk5NTgy.XjH-4A.5ihcbTXn4-KBzZjBUMuhGAGc6No"
 DEVELOPMENT_MODE = True
 server_list = ["na", "euw", "eune", "ru", "kr", "lan", "oce", "br", "las", "tr", "cn", "jp"]
-version = "1.2.5"
+version = "1.3.0"
 
 async def process_commands(text_words, message):
     resp = {}
@@ -74,8 +74,8 @@ class MyClient(discord.Client):
             if soup.find(class_="Name") is None:
                 await message.channel.send(messages.user_not_found(respy['pretty'], server_name))
                 return
-            refresh_button = soup.find(id="SummonerRefreshButton")
-            summoner_id = int(refresh_button['onclick'][39:47])
+            refresh_button = soup.find(class_="GameListContainer")
+            summoner_id = refresh_button['data-summoner-id']
             refresh_url = "https://" + server_name + ".op.gg/summoner/ajax/renew.json/"
             form_data = {"summonerId": summoner_id}
             resp = requests.post(refresh_url, form_data)
@@ -89,24 +89,40 @@ class MyClient(discord.Client):
             except ValueError:
                 pass
             r = requests.get(url)
-            soup = BeautifulSoup(r.text, 'html.parser')
+            soup = BeautifulSoup(r.text, "html.parser")
             user_name_on_opgg = soup.find(class_="Name").string
             game_history = soup.find_all(class_="GameItemWrap", limit=10)
             if len(game_history) == 0:
                 await message.channel.send("`" + user_name_on_opgg + "` has not played any games recently")
                 return
-            gameModes, victory_or_defeat, kdas, kp = [], [], [], []
+            gameModes, victory_or_defeat, kdas, kp, score = [], [], [], [], []
+            match_detail_url_1 = "https://" + server_name + ".op.gg/summoner/matches/ajax/detail/gameId="
+            match_detail_url_2 = "&summonerId=" + str(summoner_id) + "&gameTime="
             for el in game_history:
-                gameModes.append        (el.find(class_="GameType").string.split()[0] + " "*(6 - len(el.find(class_="GameType").string.split()[0])))
-                victory_or_defeat.append("|Defeat " if (el.find(class_="Win") is None) else "|Victory")
+                game_id = str(el.find(class_="GameItem")['data-game-id'])
+                game_time = str(el.find(class_="GameItem")['data-game-time'])
+                match_detail_url = match_detail_url_1 + game_id + match_detail_url_2 + game_time
+                match_detail_resp = requests.get(match_detail_url)
+                match_detail_soup = BeautifulSoup(match_detail_resp.text, "html.parser")
+                game_mode_str = el.find(class_="GameType").string.split()[0]
+                game_mode_str = "Solo" if (game_mode_str == "Ranked") else game_mode_str[0:4]
+                gameModes.append        (game_mode_str + " "*(4 - len(game_mode_str)))
+                victory_or_defeat.append("|Loss  " if (el.find(class_="Win") is None) else "|Win   ")
                 kdas.append             ("|" + el.find("span", class_="KDARatio").string.split()[0][0:4])
                 kp.append               ("|" + el.find("div", class_="CKRate").string.split()[1])
-                #score.append            ("|" + el.find("div", class_="OPScore").string.split()[0])
-            res = [i + j + k + l for i, j, k, l in zip(gameModes, victory_or_defeat, kdas, kp)]
+                sum_names  = match_detail_soup.findAll("td", class_="SummonerName Cell")
+                score_items = match_detail_soup.findAll("div", class_="OPScore Text")
+                for i in range(10):
+                    if sum_names[i].find('a').get_text() == user_name_on_opgg:
+                        if len(score_items) is 0:
+                            score.append("|N/A")
+                        else:
+                            score.append            ("|" + score_items[i].get_text())
+            res = [i + j + k + l + m for i, j, k, l, m in zip(gameModes, victory_or_defeat, kdas, kp, score)]
             myString = '\n'.join(res)
             myDivider="\n" + "-" * 26 + "\n"
             development_str = "DEVELOPMENT MODE:\n" if DEVELOPMENT_MODE else ""
-            await message.channel.send('```\n' + development_str + 'STATS FOR ' + user_name_on_opgg + ": " + myDivider + "Game  |Outcome|KDA |KP |OPGG" + myDivider +  myString + "```")
+            await message.channel.send('```\n' + development_str + 'STATS FOR ' + user_name_on_opgg + ": " + myDivider + "Game|Result|KDA |KP |OPGG" + myDivider +  myString + "```")
             return
 
 def main():
