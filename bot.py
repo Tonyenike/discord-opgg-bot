@@ -1,6 +1,8 @@
 import discord
 import messages
 import requests
+import tabulate
+tabulate.MIN_PADDING=0
 from tabulate import tabulate
 import os, sys, time
 from bs4 import BeautifulSoup
@@ -10,7 +12,7 @@ import numpy
 discord_api_key="NjcwNDY1NDA4MzQ3Nzk5NTgy.XjH-4A.5ihcbTXn4-KBzZjBUMuhGAGc6No"
 DEVELOPMENT_MODE = True
 server_list = ["na", "euw", "eune", "ru", "kr", "lan", "oce", "br", "las", "tr", "cn", "jp"]
-version = "1.4.0"
+version = "1.4.1"
 author  = "Me Too Thanks#7924"
 
 ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(math.floor(n/10)%10!=1)*(n%10<4)*n%10::4])
