@@ -8,6 +8,8 @@ goodbye="Goodbye!"
 
 development="DEVELOPMENT MODE BOT SAYS:\n"
 
+loading="Loading..."
+
 no="You aren't the boss of me!"
 
 def command_not_recognized(command):
