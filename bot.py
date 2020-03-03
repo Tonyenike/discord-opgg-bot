@@ -12,8 +12,9 @@ import numpy
 discord_api_key="NjcwNDY1NDA4MzQ3Nzk5NTgy.XjH-4A.5ihcbTXn4-KBzZjBUMuhGAGc6No"
 DEVELOPMENT_MODE = True
 server_list = ["na", "euw", "eune", "ru", "kr", "lan", "oce", "br", "las", "tr", "cn", "jp"]
-version = "1.4.1"
+version = "1.4.2"
 author  = "Me Too Thanks#7924"
+bot_id  = "OPGG BOT#7083"
 
 ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(math.floor(n/10)%10!=1)*(n%10<4)*n%10::4])
 
@@ -25,17 +26,19 @@ def argsort(myArray):
 async def process_commands(selfie, text_words, message):
     resp = {}
     resp['server_name'] = "na"
+    resp['latest'] = False
+    indices_to_delete = []
     for i in range(len(text_words)):
         if text_words[i] == '!server':
             if i + 1 == len(text_words):
                 await message.channel.send(messages.server_arg_missing)
                 return None
-            resp.server_name = text_words[i + 1]
-            if not server_name in server_list:
+            resp['server_name'] = text_words[i + 1]
+            if not resp['server_name'] in server_list:
                 await message.channel.send(messages.server_not_found(server_name))
                 return None
-            text_words.pop(i + 1)
-            text_words.pop(i)
+            indices_to_delete.append(i + 1)
+            indices_to_delete.append(i)
         elif text_words[i] == '!shutdown':
             if(str(message.author) == author):
                 await message.channel.send(messages.goodbye)
@@ -46,9 +49,14 @@ async def process_commands(selfie, text_words, message):
         elif text_words[i] == '!version':
             await message.channel.send("`Version: " + version + "`")
             return None
+        elif text_words[i] == '!latest':
+            resp['latest'] = True
+            indices_to_delete.append(i)
         elif text_words[i][0] == '!':
             await message.channel.send(messages.command_not_recognized(text_words[i]))
             return None
+    for index in sorted(indices_to_delete, reverse=True):
+        del text_words[index]
     resp['user_name'] = ''.join(text_words)
     resp['pretty'] = ' '.join(text_words)
     return resp
@@ -67,6 +75,14 @@ class MyClient(discord.Client):
     
     async def on_ready(self):
         print('Logged on as {0}!'.format(self.user))
+
+    async def on_reaction_add(self, reaction, user):
+        if DEVELOPMENT_MODE and not(reaction.message.channel.guild.id == 670463741082730498):
+            return
+        if (str(reaction.message.author) == bot_id):
+            # await reaction.message.channel.send("You reacted to my message!")
+            pass
+        return
 
     async def on_message(self, message):
         if DEVELOPMENT_MODE and not(message.channel.guild.id == 670463741082730498):
@@ -88,6 +104,7 @@ class MyClient(discord.Client):
             if soup.find(class_="Name") is None:
                 await message.channel.send(messages.user_not_found(respy['pretty'], server_name))
                 return
+            bot_loading_msg = await message.channel.send(messages.loading)
             refresh_button = soup.find(class_="GameListContainer")
             summoner_id = refresh_button['data-summoner-id']
             refresh_url = "https://" + server_name + ".op.gg/summoner/ajax/renew.json/"
@@ -98,7 +115,7 @@ class MyClient(discord.Client):
                 # If we have an error renewing, then this summoner was renewed recently.
                 # Proceed assuming that their data is accurate
                 while(resp.json()['finish'] == False):
-                    time.sleep(.1)
+                    time.sleep(.2)
                     resp = requests.post(refresh_url2, form_data)
             except ValueError:
                 pass
@@ -107,6 +124,7 @@ class MyClient(discord.Client):
             user_name_on_opgg = soup.find(class_="Name").string
             game_history = soup.find_all(class_="GameItemWrap", limit=10)
             if len(game_history) == 0:
+                await bot_loading_msg.delete()
                 await message.channel.send("`" + user_name_on_opgg + "` has not played any games recently")
                 return
             gameModes, victory_or_defeat, kdas, kp, score, champion, rank = [], [], [], [], [], [], []
@@ -145,8 +163,8 @@ class MyClient(discord.Client):
             development_str = "DEVELOPMENT MODE:\n" if DEVELOPMENT_MODE else ""
             table_str = tabulate(res, headers="firstrow", tablefmt="fancy_grid", numalign="left")
             final_string =  '```\n' + development_str + 'STATS FOR ' + user_name_on_opgg + ":\n" + table_str + "```" 
+            await bot_loading_msg.delete()
             await message.channel.send(final_string)
-           
             return
 
 def main():
