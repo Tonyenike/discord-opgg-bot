@@ -15,7 +15,7 @@ from tabulate import tabulate
 discord_api_key = "NjcwNDY1NDA4MzQ3Nzk5NTgy.XjH-4A.5ihcbTXn4-KBzZjBUMuhGAGc6No"
 DEVELOPMENT_MODE = True
 server_list = ["na", "euw", "eune", "ru", "kr", "lan", "oce", "br", "las", "tr", "cn", "jp"]
-version = "1.4.2"
+version = "1.4.3"
 author = "Me Too Thanks#7924"
 bot_id = "OPGG BOT#7083"
 
@@ -84,15 +84,17 @@ def generate_team_table(team, match_detail_soup):
     cs_div = match_detail_soup.findAll("td", class_="CS Cell")
     damage_div = match_detail_soup.findAll("div", class_="ChampionDamage")
     pinks_div = match_detail_soup.findAll("span", class_="SightWard")
-    headers = ["Summoner", "OPGG", "CS", "Damage", "Pinks"]
+    champions_div = match_detail_soup.findAll("td", class_="ChampionImage Cell")
+    headers = ["Summoner", "Champion", "OPGG", "CS", "Damage", "Pinks"]
     res = [headers]
-    for i, j, k, l, m in zip(sum_names_div[my_slice], score_items_div[my_slice],
+    for i, j, k, l, m, n in zip(sum_names_div[my_slice], champions_div[my_slice], score_items_div[my_slice],
                              cs_div[my_slice], damage_div[my_slice], pinks_div[my_slice]):
         new_row = [i.find('a').get_text(),
-                   j.get_text(),
-                   k.find("div", class_="CS").get_text(),
-                   l.get_text(),
-                   m.get_text()]
+                   j.find('div').get_text(),
+                   k.get_text(),
+                   l.find("div", class_="CS").get_text(),
+                   m.get_text(),
+                   n.get_text()]
         res.append(new_row)
     table_str = tabulate(res, headers="firstrow", tablefmt="fancy_grid", numalign="left")
     return table_str
