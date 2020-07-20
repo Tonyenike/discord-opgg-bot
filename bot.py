@@ -12,6 +12,7 @@ import numpy
 tabulate.MIN_PADDING = 0
 from tabulate import tabulate
 
+print(os.environ['BOT_TOKEN'])
 discord_api_key = "NjcwNDY1NDA4MzQ3Nzk5NTgy.XjH-4A.5ihcbTXn4-KBzZjBUMuhGAGc6No"
 DEVELOPMENT_MODE = True
 server_list = ["na", "euw", "eune", "ru", "kr", "lan", "oce", "br", "las", "tr", "cn", "jp"]
